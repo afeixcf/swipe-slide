@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"/>
+    <link rel="stylesheet" href="slide.css"/>
+</head>
+<body>
+<div id="slide" class="_slide_box">
+    <ul class="_slide_item_wrap">
+        <li class="_slide_item">
+            <img src="./images/Dinghuo_home_banner.png" style="width:100%;"/>
+        </li>
+        <li class="_slide_item">
+            <img src="./images/Dingqi_home_banner.png" style="width:100%;"/>
+        </li>
+        <li class="_slide_item">
+            <img src="./images/Huobi_home_banner.png" style="width:100%;"/>
+        </li>
+        <li class="_slide_item">
+            <img src="./images/Home_banner.png" style="width:100%;"/>
+        </li>
+    </ul>
+</div>
+
+<script src="../swipe/swipe.js"></script>
+<script src="slide.js"></script>
+<script>
+    document._swipe({
+        start:function (o) {
+            console.log(o);
+        }
+    });
+</script>
+</body>
+</html>
