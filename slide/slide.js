@@ -1,17 +1,17 @@
 (function () {
 
     /*
-    *   obj传参说明
-    *
-    *   obj.autoMs 自动播放时间 毫秒 不传默认2000；
-    *   obj.autoPlay 布尔值 true为自动播放 false不自动播放
-    *   obj.iHeight number型 容器高度 不设置的情况下，根据CSS情况默认
-    *   obj.iWidth number型 容器宽度 不设置的情况下，根据CSS情况默认
-    *   obj.container DOM对象 存放各个item的容器
-    *   obj.item DOM对象 容器下得各个item 是个类数组对象
-    *   obj.isVertical 布尔值 决定播放方向是横向还是纵向
-    *
-    * */
+     *   obj传参说明
+     *
+     *   obj.autoMs 自动播放时间 毫秒 不传默认2000；
+     *   obj.autoPlay 布尔值 true为自动播放 false不自动播放
+     *   obj.iHeight number型 容器高度 不设置的情况下，根据CSS情况默认
+     *   obj.iWidth number型 容器宽度 不设置的情况下，根据CSS情况默认
+     *   obj.container DOM对象 存放各个item的容器
+     *   obj.item DOM对象 容器下得各个item 是个类数组对象
+     *   obj.isVertical 布尔值 决定播放方向是横向还是纵向
+     *
+     * */
     function slide(obj) {
         if (!obj) obj = {};
         var container = obj.container || this.querySelectorAll('._slide_item_wrap')[0];
@@ -23,6 +23,7 @@
         var i, timer;
         var that = this;
         var isVertical = obj.isVertical;
+
 
         container.style.width = len + '00%';
         container.style.height = ih + 'px';
@@ -39,7 +40,6 @@
             item[i].querySelector('img').style.height = ih + 'px';
         }
 
-        that.style.overflow = 'hidden';
         that.style.width = iw + 'px';
 
         container._swipe({
@@ -61,8 +61,7 @@
                 iNow = 0;
                 !isVertical ? item[0].style.left = '0px' : item[0].style.top = '0px';
                 sport();
-            }
-            if (iNow == -1) {
+            } else if (iNow == -1) {
                 iNow = len - 1;
                 !isVertical ? item[len - 1].style.left = (len - 1) * iw + 'px' : item[len - 1].style.top = (len - 1) * ih + 'px';
                 sport();
@@ -80,20 +79,20 @@
         }
 
         function setPosition(o) {
-            if (iNow != 0 && o.direction == 'left' && !isVertical) {
-                item[0].style.left = len * iw + 'px';
+            if (iNow == 0 && o.direction == 'right' && !isVertical) {
+                item[len - 1].style.left = '-' + iw + 'px';
             } else if (iNow == 0 && o.direction == 'left' && !isVertical) {
                 item[len - 1].style.left = (len - 1) * iw + 'px';
-            } else if (iNow != len - 1 && o.direction == 'right' && !isVertical) {
-                item[len - 1].style.left = '-' + iw + 'px';
+            } else if (iNow == len - 1 && o.direction == 'left' && !isVertical) {
+                item[0].style.left = len * iw + 'px';
             } else if (iNow == len - 1 && o.direction == 'right' && !isVertical) {
                 item[0].style.left = '0px';
-            } else if (iNow != 0 && o.direction == 'up' && isVertical) {
-                item[0].style.top = len * ih + 'px';
+            } else if (iNow == 0 && o.direction == 'down' && isVertical) {
+                item[len - 1].style.top = '-' + ih + 'px';
             } else if (iNow == 0 && o.direction == 'up' && isVertical) {
                 item[len - 1].style.top = (len - 1) * ih + 'px';
-            } else if (iNow != len - 1 && o.direction == 'down' && isVertical) {
-                item[len - 1].style.top = '-' + ih + 'px';
+            } else if (iNow == len - 1 && o.direction == 'up' && isVertical) {
+                item[0].style.top = len * ih + 'px';
             } else if (iNow == len - 1 && o.direction == 'down' && isVertical) {
                 item[0].style.top = '0px';
             }
@@ -124,7 +123,9 @@
             }
 
             sport();
-            timer = autoPlay();
+            timer = setTimeout(function () {
+                timer = autoPlay();
+            }, 300)
         }
 
         function next() {
@@ -151,6 +152,7 @@
                 if (obj.autoMs < 1000) {
                     throw Error('auto play time is must greater than 1000');
                 }
+                readyMove();
                 return setInterval(prev, obj.autoMs || 2000);
             } else {
                 return null;
@@ -177,7 +179,4 @@
 
 })();
 var slide = document.getElementById('slide');
-var s = slide._slide({
-    isVertical: true,
-    iHeight: document.documentElement.clientHeight || document.body.clientHeight
-});
+var s = slide._slide();

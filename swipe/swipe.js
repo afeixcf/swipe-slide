@@ -8,8 +8,16 @@
             disX: 0,
             disY: 0,
             direction: '',
-            startTime:0,
-            endTime:0
+            startTime: 0,
+            endTime: 0,
+            distance: 0,
+            getAngle: function (x,y) {     // 旋转角度，x，y是圆心坐标~
+                var startDx = this.startX - x;
+                var startDy = y - this.startY;
+                var dx = this.endX - x;
+                var dy = y - this.endY;
+                return getangle(dx,dy) - getangle(startDx, startDy);
+            }
         };
         var _this = this;
 
@@ -17,18 +25,16 @@
 
         function touchStart(e) {
             var touch = e.touches[0];
-            param = {
-                startX: 0,
-                endX: 0,
-                startY: 0,
-                endY: 0,
-                disX: 0,
-                disY: 0,
-                direction: ''
-            };
+            param.disX = 0;
+            param.disY = 0;
+            param.endX = 0;
+            param.endY = 0;
+            param.direction = '';
             param.startX = touch.pageX;
             param.startY = touch.pageY;
             param.startTime = e.timeStamp;
+            param.endTime = 0;
+            param.distance = 0;
 
             if (o.start) o.start.call(_this, param);
 
@@ -41,14 +47,16 @@
 
         function touchMove(e) {
             var touch = e.changedTouches[0];
-            var angel;
+            var angle;
+            var r = 50;
 
             param.endX = touch.pageX;
             param.endY = touch.pageY;
             param.disX = param.endX - param.startX;
             param.disY = param.startY - param.endY;
-            angel = getAngel(param.disX,param.disY);
-            param.direction = getDirection(angel);
+            angle = getangle(param.disX, param.disY);
+            param.direction = getDirection(angle);
+            param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
 
             if (o.move) o.move.call(_this, param);
 
@@ -68,20 +76,21 @@
         }
     }
 
-    function getDirection(angel) {
+    function getDirection(angle) {
         var direction;
-        if (angel < 45 && angel > -45) {
+        if (angle < 45 && angle > -45) {
             direction = 'right';
-        } else if (angel > 45 && angel < 135) {
+        } else if (angle > 45 && angle < 135) {
             direction = 'up';
-        } else if (angel > 135 || angel < -135) {
+        } else if (angle > 135 || angle < -135) {
             direction = 'left';
-        } else if (angel < -45 && angel > -135) {
+        } else if (angle < -45 && angle > -135) {
             direction = 'down';
         }
         return direction
     }
-    function getAngel(dx,dy){
+
+    function getangle(dx, dy) {
         return Math.atan2(dy, dx) * 180 / Math.PI;
     }
 
