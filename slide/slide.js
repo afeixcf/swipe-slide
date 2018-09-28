@@ -1,5 +1,8 @@
-(function () {
-
+!function (e, n) {
+    "function" == typeof define && (define.amd || define.cmd) ? define(function () {
+        return n(e)
+    }) : n(e, !0)
+}(window, function (e, n) {
     /*
      *   obj传参说明
      *
@@ -12,45 +15,48 @@
      *   obj.isVertical 布尔值 决定播放方向是横向还是纵向
      *
      * */
-    function slide(obj) {
+    function Slider(obj) {
         if (!obj) obj = {};
-        var container = obj.container || this.querySelectorAll('._slide_item_wrap')[0];
+        var container = obj.container || obj.ele.querySelectorAll('._slide_item_wrap')[0];
         var item = obj.item || container.querySelectorAll('._slide_item');
         var len = item.length;
         var iNow = 0;
-        var iw = obj.iWidth || this.offsetWidth;
-        var ih = obj.iHeight || item[0].offsetHeight;
+        var iw = obj.w || obj.ele.offsetWidth;
+        var ih = obj.h || item[0].offsetHeight;
         var i, timer;
-        var that = this;
+        var that = obj.ele;
         var isVertical = obj.isVertical;
+        var loop = typeof obj.loop === 'undefined' ? true : obj.loop;
 
-
-        container.style.width = len + '00%';
-        container.style.height = ih + 'px';
-        container.style.position = 'relative';
-        container.style.boxSizing = 'border-box';
-        for (i = 0; i < len; i++) {
-            if (isVertical) {
-                item[i].style.top = i * ih + 'px';
-            } else {
-                item[i].style.left = i * iw + 'px';
-            }
-            item[i].style.width = 100 / (len) + '%';
-            item[i].style.position = 'absolute';
-            item[i].querySelector('img').style.height = ih + 'px';
-        }
+        initPosition();
+        // container.style.width = len + '00%';
+        // container.style.position = 'relative';
+        // container.style.boxSizing = 'border-box';
+        // for (i = 0; i < len; i++) {
+        //     if (isVertical) {
+        //         item[i].style.top = i * ih + 'px';
+        //     } else {
+        //         item[i].style.left = i * iw + 'px';
+        //     }
+        //     item[i].style.width = 100 / (len) + '%';
+        //     item[i].style.position = 'absolute';
+        // }
 
         that.style.width = iw + 'px';
 
+        var r = '';
         container._swipe({
-            start: function () {
+            start: function (o, e) {
                 clearInterval(timer);
                 readyMove();
+                obj.start && obj.start(o, e);
             },
             move: function (o) {
-                setPosition(o);
+                r !== 'disabled' && obj.move &&  (r = obj.move(o));
+                if (r !== 'disabled') setPosition(o);
             },
             end: function (o) {
+                r = '';
                 endMove(o);
             }
         });
@@ -76,25 +82,29 @@
                 container.style.transform = 'translateX(' + -iNow * iw + 'px) translateZ(0)';
                 container.style.webkitTransform = 'translateX(' + -iNow * iw + 'px) translateZ(0)';
             }
+
+            obj.end && obj.end(iNow);
         }
 
         function setPosition(o) {
-            if (iNow == 0 && o.direction == 'right' && !isVertical) {
-                item[len - 1].style.left = '-' + iw + 'px';
-            } else if (iNow == 0 && o.direction == 'left' && !isVertical) {
-                item[len - 1].style.left = (len - 1) * iw + 'px';
-            } else if (iNow == len - 1 && o.direction == 'left' && !isVertical) {
-                item[0].style.left = len * iw + 'px';
-            } else if (iNow == len - 1 && o.direction == 'right' && !isVertical) {
-                item[0].style.left = '0px';
-            } else if (iNow == 0 && o.direction == 'down' && isVertical) {
-                item[len - 1].style.top = '-' + ih + 'px';
-            } else if (iNow == 0 && o.direction == 'up' && isVertical) {
-                item[len - 1].style.top = (len - 1) * ih + 'px';
-            } else if (iNow == len - 1 && o.direction == 'up' && isVertical) {
-                item[0].style.top = len * ih + 'px';
-            } else if (iNow == len - 1 && o.direction == 'down' && isVertical) {
-                item[0].style.top = '0px';
+            if (loop) {
+                if (iNow == 0 && o.direction == 'right' && !isVertical) {
+                    item[len - 1].style.left = '-' + iw + 'px';
+                } else if (iNow == 0 && o.direction == 'left' && !isVertical) {
+                    item[len - 1].style.left = (len - 1) * iw + 'px';
+                } else if (iNow == len - 1 && o.direction == 'left' && !isVertical) {
+                    item[0].style.left = len * iw + 'px';
+                } else if (iNow == len - 1 && o.direction == 'right' && !isVertical) {
+                    item[0].style.left = '0';
+                } else if (iNow == 0 && o.direction == 'down' && isVertical) {
+                    item[len - 1].style.top = '-' + ih + 'px';
+                } else if (iNow == 0 && o.direction == 'up' && isVertical) {
+                    item[len - 1].style.top = (len - 1) * ih + 'px';
+                } else if (iNow == len - 1 && o.direction == 'up' && isVertical) {
+                    item[0].style.top = len * ih + 'px';
+                } else if (iNow == len - 1 && o.direction == 'down' && isVertical) {
+                    item[0].style.top = '0';
+                }
             }
 
             if (isVertical) {
@@ -112,23 +122,24 @@
             var disTime = o.endTime - o.startTime;
             container.style.transition = 'all 0.3s ease-in-out';
 
-            if (!isVertical && o.disX < -20 && disTime < 500) {
-                iNow++;
-            } else if (!isVertical && o.disX > 20 && disTime < 500) {
-                iNow--;
-            } else if (isVertical && o.disY > 20 && disTime < 500) {
-                iNow++;
-            } else if (isVertical && o.disY < -20 && disTime < 500) {
-                iNow--;
+            if (!isVertical && o.disX < -20 && (disTime < 500 || o.disX < iw * -.5)) {
+                (loop || iNow !== len - 1) && iNow++;
+            } else if (!isVertical && o.disX > 20 && (disTime < 500 || o.disX > iw * .5)) {
+                (loop || iNow !== 0 ) && iNow--;
+            } else if (isVertical && o.disY > 20 && (disTime < 500 || o.disY < ih * -.5)) {
+                (loop || iNow !== len - 1) && iNow++;
+            } else if (isVertical && o.disY < -20 && (disTime < 500 || o.disY > ih * .5)) {
+                (loop || iNow !== 0) && iNow--;
             }
 
             sport();
             timer = setTimeout(function () {
-                timer = autoPlay();
+                (obj.autoPlay || obj.autoMs) && (timer = autoPlay());
             }, 300)
         }
 
         function next() {
+            initPosition();
             container.style.transition = 'all 0.3s ease-in-out';
             if (iNow == len - 1) {
                 iNow = -1;
@@ -138,6 +149,7 @@
         }
 
         function prev() {
+            initPosition();
             container.style.transition = 'all 0.3s ease-in-out';
             if (iNow == 0) {
                 iNow = len;
@@ -153,9 +165,24 @@
                     throw Error('auto play time is must greater than 1000');
                 }
                 readyMove();
-                return setInterval(prev, obj.autoMs || 2000);
+                return setInterval(next, obj.autoMs || 2000);
             } else {
                 return null;
+            }
+        }
+
+        function initPosition () {
+            container.style.width = len + '00%';
+            container.style.position = 'relative';
+            container.style.boxSizing = 'border-box';
+            for (i = 0; i < len; i++) {
+                if (isVertical) {
+                    item[i].style.top = i * ih + 'px';
+                } else {
+                    item[i].style.left = i * iw + 'px';
+                }
+                item[i].style.width = 100 / (len) + '%';
+                item[i].style.position = 'absolute';
             }
         }
 
@@ -164,19 +191,32 @@
         return {
             next: next,
             prev: prev,
-            index: function (n) {
+            location: function (n) {
+                initPosition();
+                container.style.transition = 'all 0.3s ease-in-out';
                 if (n >= 0 && n <= len - 1) {
                     iNow = n;
                     sport();
                 } else {
                     throw TypeError();
                 }
+            },
+            getCurrentIndex: function () {
+                return iNow;
             }
         };
     }
 
-    Element.prototype._slide = slide;
+    return n && (e.Slider = Slider), Slider;
+});
 
-})();
-var slide = document.getElementById('slide');
-var s = slide._slide();
+    Slider({
+        ele: document.getElementById('slides'),
+        loop: false,
+        autoMs: 3000
+    });
+    Slider({
+        ele: document.getElementById('slides2'),
+        loop: true,
+        isVertical: true
+    });
