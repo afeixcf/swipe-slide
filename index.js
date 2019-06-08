@@ -40,8 +40,6 @@
 
             _this.addEventListener('touchmove', touchMove, false);
             _this.addEventListener('touchend', touchEnd, false);
-
-            e.stopPropagation();
         }
 
         function touchMove(e) {
@@ -57,19 +55,15 @@
             param.direction = getDirection(angle);
             param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
 
-            if (o.move) o.move.call(_this, param);
-
-            e.stopPropagation();
+            if (o.move) o.move.call(_this, param, e);
         }
 
         function touchEnd(e) {
             param.endTime = e.timeStamp;
-            if (o.end) o.end.call(_this, param);
+            if (o.end) o.end.call(_this, param, e);
 
             _this.removeEventListener('touchmove', touchMove, false);
             _this.removeEventListener('touchend', touchEnd, false);
-
-            e.stopPropagation();
         }
     }
 
@@ -148,22 +142,26 @@
                 readyMove();
                 obj.start && obj.start(o, e);
             },
-            move: function (o) {
-                if (isVertical || o.direction === 'left' && o.direction === 'right' && !flag) {
-                    flag = true;
+            move: function (o, e) {
+                if (!flag && (isVertical || o.direction === 'left' || o.direction === 'right')) {
+                    disabledY = 1;
                 }
-                obj.move &&  obj.move(o);
-                setPosition(o);
+                flag = true;
+
+                if (disabledY !== 0) {
+                    obj.move &&  obj.move(o, e);
+                    setPosition(o);
+                }
             },
-            end: function (o) {
-                endMove(o);
+            end: function (o, e) {
+                disabledY = 0;
+                flag = false;
+                endMove(o, e);
             }
         });
 
         function readyMove() {
             container.style.transition = 'all 0s ease-in-out';
-            container.style.touchAction = 'inherit';
-            container.style.msTouchAction = 'inherit';
             if (iNow == len) {
                 iNow = 0;
                 !isVertical ? item[0].style.left = '0px' : item[0].style.top = '0px';
@@ -222,7 +220,6 @@
         function endMove(o) {
             var disTime = o.endTime - o.startTime;
             container.style.transition = 'all 0.3s ease-in-out';
-            container.style.touchAction = 'inherit';
 
             if (!isVertical && o.disX < -20 && (disTime < 500 || o.disX < iw * -.5)) {
                 (loop || iNow !== len - 1) && iNow++;
@@ -312,37 +309,10 @@
     return n && (e.Slider = Slider), Slider;
 });
 
-    // 获取class
-    function getClass(el) {
-        return el.getAttribute('class')
+let disabledY = 0;
+document.addEventListener('touchmove', function (e) {
+    console.log(disabledY);
+    if (disabledY) {
+        e.preventDefault();
     }
-    // 设置class
-    function setClass(el, cls) {
-        return el.setAttribute('class', cls)
-    }
-    
-    // 当然彩蛋压轴戏肯定是在最后的啦
-    // 判断class是否存在
-    function hasClass(elements, cName) {
-        return !!elements.className.match(new RegExp("(\\s|^)" + cName + "(\\s|$)"));
-    }
-    // 添加clss
-    function addClass(elements, cName) {
-        if (!hasClass(elements, cName)) {
-            elements.className += " " + cName;
-        }
-    }
-    // 删除class
-    function removeClass(elements, cName) {
-        if (hasClass(elements, cName)) {
-            elements.className = elements.className.replace(new RegExp("(\\s|^)" + cName + "(\\s|$)"), " ");
-        }
-    }
-    // 切换class
-    function toggleClass(elements, cName) {
-        if (hasClass(elements, cName)) {
-            elements.className = elements.className.replace(new RegExp("(\\s|^)" + cName + "(\\s|$)"), "");
-        } else {
-            elements.className += " " + cName;
-        }
-    }
+}, {passive: false});
