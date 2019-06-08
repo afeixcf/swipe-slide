@@ -1,0 +1,19 @@
+{
+  "name": "swipe-slide",
+  "version": "1.0.1",
+  "description": "新增入口文件",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afeixcf/swipe-slide.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/afeixcf/swipe-slide/issues"
+  },
+  "homepage": "https://github.com/afeixcf/swipe-slide#readme"
+}

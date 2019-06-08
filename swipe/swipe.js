@@ -41,7 +41,7 @@
             _this.addEventListener('touchmove', touchMove, false);
             _this.addEventListener('touchend', touchEnd, false);
 
-            e.stopPropagation();
+            // e.stopPropagation();
             e.preventDefault();
         }
 
