@@ -1,93 +1,89 @@
-!(function () {
-    function swipe(o) {
-        var param = {
-            startX: 0,
-            endX: 0,
-            startY: 0,
-            endY: 0,
-            disX: 0,
-            disY: 0,
-            direction: '',
-            startTime: 0,
-            endTime: 0,
-            distance: 0,
-            getAngle: function (x,y) {     // 旋转角度，x，y是圆心坐标~
-                var startDx = this.startX - x;
-                var startDy = y - this.startY;
-                var dx = this.endX - x;
-                var dy = y - this.endY;
-                return getangle(dx,dy) - getangle(startDx, startDy);
-            }
-        };
-        var _this = this;
-
-        this.addEventListener('touchstart', touchStart, false);
-
-        function touchStart(e) {
-            var touch = e.touches[0];
-            param.disX = 0;
-            param.disY = 0;
-            param.endX = 0;
-            param.endY = 0;
-            param.direction = '';
-            param.startX = touch.pageX;
-            param.startY = touch.pageY;
-            param.startTime = e.timeStamp;
-            param.endTime = 0;
-            param.distance = 0;
-
-            if (o.start) o.start.call(_this, param);
-
-            _this.addEventListener('touchmove', touchMove, false);
-            _this.addEventListener('touchend', touchEnd, false);
+function Swipe(o) {
+    var container = o.container;
+    var param = {
+        startX: 0,
+        endX: 0,
+        startY: 0,
+        endY: 0,
+        disX: 0,
+        disY: 0,
+        direction: '',
+        startTime: 0,
+        endTime: 0,
+        distance: 0,
+        getAngle: function (x, y) {     // 旋转角度，x，y是圆心坐标~
+            x = x || this.startX;
+            y = y || this.startY;
+            var startDx = this.startX - x;
+            var startDy = y - this.startY;
+            var dx = this.endX - x;
+            var dy = y - this.endY;
+            return getangle(dx, dy) - getangle(startDx, startDy);
         }
+    };
 
-        function touchMove(e) {
-            var touch = e.changedTouches[0];
-            var angle;
-            var r = 50;
+    container.addEventListener('touchstart', touchStart, false);
 
-            param.endX = touch.pageX;
-            param.endY = touch.pageY;
-            param.disX = param.endX - param.startX;
-            param.disY = param.startY - param.endY;
-            angle = getangle(param.disX, param.disY);
-            param.direction = getDirection(angle);
-            param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
+    function touchStart(e) {
+        var touch = e.touches[0];
+        param.disX = 0;
+        param.disY = 0;
+        param.endX = 0;
+        param.endY = 0;
+        param.direction = '';
+        param.startX = touch.pageX;
+        param.startY = touch.pageY;
+        param.startTime = e.timeStamp;
+        param.endTime = 0;
+        param.distance = 0;
 
-            if (o.move) o.move.call(_this, param, e);
-        }
+        if (o.start) o.start.call(container, param);
 
-        function touchEnd(e) {
-            param.endTime = e.timeStamp;
-            if (o.end) o.end.call(_this, param, e);
-
-            _this.removeEventListener('touchmove', touchMove, false);
-            _this.removeEventListener('touchend', touchEnd, false);
-        }
+        container.addEventListener('touchmove', throttle(touchMove, 100), false);
+        container.addEventListener('touchend', touchEnd, false);
     }
 
-    function getDirection(angle) {
-        var direction;
-        if (angle < 45 && angle > -45) {
-            direction = 'right';
-        } else if (angle > 45 && angle < 135) {
-            direction = 'up';
-        } else if (angle > 135 || angle < -135) {
-            direction = 'left';
-        } else if (angle < -45 && angle > -135) {
-            direction = 'down';
-        }
-        return direction
+    function touchMove(e) {
+        var touch = e.changedTouches[0];
+        var angle;
+
+        param.endX = touch.pageX;
+        param.endY = touch.pageY;
+        param.disX = param.endX - param.startX;
+        param.disY = param.startY - param.endY;
+        angle = getangle(param.disX, param.disY);
+        param.direction = getDirection(angle);
+        param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
+
+        if (o.move) o.move.call(container, param, e);
     }
 
-    function getangle(dx, dy) {
-        return Math.atan2(dy, dx) * 180 / Math.PI;
-    }
+    function touchEnd(e) {
+        param.endTime = e.timeStamp;
+        if (o.end) o.end.call(container, param, e);
 
-    Element.prototype._swipe = swipe;
-    document._swipe = swipe.bind(document);
-})();
+        container.removeEventListener('touchmove', touchMove, false);
+        container.removeEventListener('touchend', touchEnd, false);
+    }
+}
+
+function getDirection(angle) {
+    var direction;
+    if (angle < 45 && angle > -45) {
+        direction = 'right';
+    } else if (angle > 45 && angle < 135) {
+        direction = 'up';
+    } else if (angle > 135 || angle < -135) {
+        direction = 'left';
+    } else if (angle < -45 && angle > -135) {
+        direction = 'down';
+    }
+    return direction;
+}
+
+function getangle(dx, dy) {
+    return Math.atan2(dy, dx) * 180 / Math.PI;
+}
 
 !function (e, n) {
     "function" == typeof define && (define.amd || define.cmd) ? define(function () {
@@ -108,35 +104,22 @@
      * */
     function Slider(obj) {
         if (!obj) obj = {};
-        var container = obj.container || obj.ele.querySelectorAll('._slide_item_wrap')[0];
-        var item = obj.item || container.querySelectorAll('._slide_item');
+        var that = obj.ele;
+        var container = that.children[0];
+        var item = container.children;
         var len = item.length;
         var iNow = 0;
         var iw = obj.w || obj.ele.offsetWidth;
         var ih = obj.h || item[0].offsetHeight;
         var i, timer;
-        var that = obj.ele;
         var isVertical = obj.isVertical;
         var loop = typeof obj.loop === 'undefined' ? true : obj.loop;
 
         initPosition();
-        // container.style.width = len + '00%';
-        // container.style.position = 'relative';
-        // container.style.boxSizing = 'border-box';
-        // for (i = 0; i < len; i++) {
-        //     if (isVertical) {
-        //         item[i].style.top = i * ih + 'px';
-        //     } else {
-        //         item[i].style.left = i * iw + 'px';
-        //     }
-        //     item[i].style.width = 100 / (len) + '%';
-        //     item[i].style.position = 'absolute';
-        // }
-
-        that.style.width = iw + 'px';
 
         let flag = false;
-        container._swipe({
+        Swipe({
+            container: container,
             start: function (o, e) {
                 clearInterval(timer);
                 readyMove();
@@ -149,7 +132,7 @@
                 flag = true;
 
                 if (disabledY !== 0) {
-                    obj.move &&  obj.move(o, e);
+                    obj.move && obj.move(o, e);
                     setPosition(o);
                 }
             },
@@ -224,10 +207,10 @@
             if (!isVertical && o.disX < -20 && (disTime < 500 || o.disX < iw * -.5)) {
                 (loop || iNow !== len - 1) && iNow++;
             } else if (!isVertical && o.disX > 20 && (disTime < 500 || o.disX > iw * .5)) {
-                (loop || iNow !== 0 ) && iNow--;
-            } else if (isVertical && o.disY > 20 && (disTime < 500 || o.disY < ih * -.5)) {
+                (loop || iNow !== 0) && iNow--;
+            } else if (isVertical && o.disY > 20 && (disTime < 500 || o.disY > ih * .5)) {
                 (loop || iNow !== len - 1) && iNow++;
-            } else if (isVertical && o.disY < -20 && (disTime < 500 || o.disY > ih * .5)) {
+            } else if (isVertical && o.disY < -20 && (disTime < 500 || o.disY < ih * -.5)) {
                 (loop || iNow !== 0) && iNow--;
             }
 
@@ -270,8 +253,12 @@
             }
         }
 
-        function initPosition () {
+        function initPosition() {
+            that.style.padding = 0;
+            that.style.margon = 0;
+            that.style.overflow = 'hidden';
             container.style.width = len + '00%';
+            container.style.height = ih + 'px';
             container.style.position = 'relative';
             container.style.boxSizing = 'border-box';
             for (i = 0; i < len; i++) {
@@ -290,7 +277,7 @@
         return {
             next: next,
             prev: prev,
-            location: function (n) {
+            setPosition: function (n) {
                 initPosition();
                 container.style.transition = 'all 0.3s ease-in-out';
                 if (n >= 0 && n <= len - 1) {
@@ -309,10 +296,27 @@
     return n && (e.Slider = Slider), Slider;
 });
 
-let disabledY = 0;
+var throttle = function(fn,interval) {
+    var self = fn,timer,firstTime = true;
+    return function() {
+        var args = arguments,_this = this;
+        if(firstTime) {
+            self.apply(_this,args);
+            return firstTime = false;
+        }
+        if(timer) {
+           return false 
+        }
+        timer = setTimeout(function() {
+            clearTimeout(timer);
+            self.apply(_this,args);
+        },interval||500)
+    }
+}
+
+var disabledY = 0;
 document.addEventListener('touchmove', function (e) {
-    console.log(disabledY);
     if (disabledY) {
         e.preventDefault();
     }
-}, {passive: false});
+}, { passive: false });
