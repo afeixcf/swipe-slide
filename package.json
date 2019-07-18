@@ -1,6 +1,6 @@
 {
   "name": "swipe-slide",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "新增入口文件",
   "main": "index.js",
   "scripts": {
