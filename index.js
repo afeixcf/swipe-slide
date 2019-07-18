@@ -39,7 +39,7 @@ function Swipe(o) {
 
         if (o.start) o.start.call(container, param);
 
-        container.addEventListener('touchmove', throttle(touchMove, 100), false);
+        container.addEventListener('touchmove', touchMove, false);
         container.addEventListener('touchend', touchEnd, false);
     }
 
@@ -296,25 +296,7 @@ function getangle(dx, dy) {
     return n && (e.Slider = Slider), Slider;
 });
 
-var throttle = function(fn,interval) {
-    var self = fn,timer,firstTime = true;
-    return function() {
-        var args = arguments,_this = this;
-        if(firstTime) {
-            self.apply(_this,args);
-            return firstTime = false;
-        }
-        if(timer) {
-           return false 
-        }
-        timer = setTimeout(function() {
-            clearTimeout(timer);
-            self.apply(_this,args);
-        },interval||500)
-    }
-}
-
-var disabledY = 0;
+let disabledY = 0;
 document.addEventListener('touchmove', function (e) {
     if (disabledY) {
         e.preventDefault();
