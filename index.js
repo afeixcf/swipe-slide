@@ -12,8 +12,8 @@ function Swipe(o) {
         endTime: 0,
         distance: 0,
         getAngle: function (x, y) {     // 旋转角度，x，y是圆心坐标~
-            x = x || this.startX;
-            y = y || this.startY;
+            x = x || 0;
+            y = y || 0;
             var startDx = this.startX - x;
             var startDy = y - this.startY;
             var dx = this.endX - x;
@@ -54,7 +54,7 @@ function Swipe(o) {
         angle = getangle(param.disX, param.disY);
         param.direction = getDirection(angle);
         param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
-
+console.log(param.getAngle());
         if (o.move) o.move.call(container, param, e);
     }
 
