@@ -54,7 +54,7 @@ function Swipe(o) {
         angle = getangle(param.disX, param.disY);
         param.direction = getDirection(angle);
         param.distance = Math.sqrt(param.disX * param.disX + param.disY * param.disY);
-console.log(param.getAngle());
+
         if (o.move) o.move.call(container, param, e);
     }
 
@@ -117,7 +117,7 @@ function getangle(dx, dy) {
 
         initPosition();
 
-        let flag = false;
+        var flag = false;
         Swipe({
             container: container,
             start: function (o, e) {
