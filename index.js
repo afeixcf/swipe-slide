@@ -296,7 +296,7 @@ function getangle(dx, dy) {
     return n && (e.Slider = Slider), Slider;
 });
 
-let disabledY = 0;
+var disabledY = 0;
 document.addEventListener('touchmove', function (e) {
     if (disabledY) {
         e.preventDefault();
